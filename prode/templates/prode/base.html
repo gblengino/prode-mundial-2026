@@ -1,0 +1,253 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es" class="no-scrollbar">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prode {% block title %}{% endblock %}</title>
+    <link rel="shortcut icon" href="{% static 'prode/icons/favicon.png' %}" type="image/png">
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <style type="text/tailwindcss">
+        @theme {
+            /* Le indicamos a la v4 que active las clases dark:* usando el selector .dark */
+            --animate-*: initial; 
+        }
+        @variant dark (&:where(.dark, .dark *));
+    </style>
+    <script>
+        if (localStorage.getItem('color-theme') === 'dark' || (!('color-theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            document.documentElement.classList.add('dark');
+        } else {
+            document.documentElement.classList.remove('dark');
+        }
+    </script>
+    <link rel="stylesheet" href="{% static 'prode/css/scrollbars.css' %}">
+</head>
+<body class="w-full min-h-screen bg-zinc-50 dark:bg-slate-950 flex flex-col">
+
+    {% if messages %}
+        <div id="toast-container" class="fixed top-5 right-5 z-50 space-y-3 pointer-events-none">
+            {% for message in messages %}
+                <div id="toast-item" class="toast-item transform translate-y-0 opacity-100 transition-all duration-500 ease-in-out flex items-center p-4 min-w-64 max-w-sm
+                bg-emerald-500 text-white rounded-xl shadow-lg pointer-events-auto">
+                    {{ message }}
+                    <button type="button" onclick="this.parentElement.remove()" class="ms-auto -mx-1.5 -my-1.5 bg-emerald-500
+                    rounded-lg p-1.5 inline-flex items-center justify-center h-8 w-8 outline-none">
+                        <svg class="w-4 h-4 text-slate-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                    </button>
+                </div>
+            {% endfor %}
+        </div>
+        <script>
+            setTimeout(() => {
+                const toastContainer = document.getElementById('toast-container');
+                if (toastContainer) {
+                    toastContainer.querySelectorAll('.toast-item').forEach(toast => {
+                        toast.classList.remove('opacity-100');
+                        toast.classList.add('opacity-0', 'translate-y-2');
+                        setTimeout(() => toast.remove(), 500);
+                    });
+                }
+            }, 4000);
+        </script>
+    {% endif %}
+
+    <nav class="w-full h-14 sticky top-0 bg-white shadow-sm dark:bg-slate-800 flex z-40">
+        <div class="font-bold text-2xl whitespace-nowrap flex justify-center items-center pl-4 md:px-4 text-zinc-800 dark:text-slate-50">
+            Prode Mundial 2026
+        </div>
+        <ul class="hidden md:flex h-full w-full">
+            {% if user.is_authenticated %}
+                {% for item in menu_items %}
+                <li>
+                    <a href="{% url item.url%}" 
+                        class="h-full flex justify-center items-center px-4 py-2 text-zinc-600 dark:text-slate-200 
+                        hover:bg-emerald-50 hover:dark:bg-emerald-500 hover:text-emerald-600 dark:hover:text-slate-900 transition-colors font-medium">
+                        {{item.name}}
+                    </a>
+                </li>
+                {% endfor %}
+            {% else %}
+                {% for item in menu_items %}
+                {% if item.login_required == 'false' %}
+                <li>
+                    <a href="{% url item.url%}" 
+                        class="h-full flex justify-center items-center px-4 py-2 text-zinc-900 dark:text-slate-200 
+                        hover:bg-emerald-50 hover:dark:bg-emerald-500 hover:text-emerald-600 dark:hover:text-slate-900  transition-colors font-medium">
+                        {{item.name}}
+                    </a>
+                </li>
+                {% endif %}
+                {% endfor %}
+            {% endif %}
+            <li class="ml-auto flex gap-2">
+                <div class="ml-auto h-full flex items-center">
+                    <button class="theme-toggle-btn p-2 rounded-lg bg-neutral-100 dark:bg-slate-700 text-xl hover:cursor-pointer shadow-md">
+                        <span class="dark:hidden">🌙</span>
+                        <span class="hidden dark:inline">☀️</span>
+                    </button>
+                </div>
+                {% if user.is_authenticated %}
+                <form action="{% url 'logout' %}" method="post" class="h-full">
+                    {% csrf_token %}
+                    <button href="{% url 'logout' %}"
+                        class="h-full flex justify-center items-center px-4 py-2 text-red-600 bg-red-50 hover:bg-red-500 hover:text-white
+                        dark:text-slate-200 dark:bg-red-800 hover:dark:bg-red-600 transition-colors font-semibold hover:cursor-pointer">
+                        Cerrar Sesión
+                    </button>
+                </form>
+                {% else %}
+                <a href="{% url 'login' %}"
+                    class="h-full flex justify-center items-center px-4 py-2 text-slate-200 bg-emerald-600 
+                    hover:bg-emerald-500 transition-colors font-semibold">
+                    Iniciar Sesión
+                </a>
+                {% endif %}
+            </li>
+        </ul>
+        <div id="btn-open-menu" class="md:hidden flex h-full justify-center items-center text-slate-900 dark:text-slate-200 ml-auto px-4">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
+            </svg>
+        </div>
+    </nav>
+    <!-- BURGER MENU -->
+    <div id="menu-overlay" class="w-screen fixed inset-0 bg-slate-950/40 backdrop-blur-sm opacity-0 ease-in-out transition-all duration-75 pointer-events-none"></div>
+    <div id="mobile-menu" class="fixed right-0 top-0 ml-auto w-full max-w-xs h-full p-6 shadow-2xl flex flex-col justify-between border-l 
+        bg-gray-200 border-gray-400 dark:bg-slate-900 dark:border-slate-800 z-50 transform translate-x-full transition-transform duration-300 ease-in-out">
+        <div>
+            <div class="flex items-center justify-between mb-8">
+                <h2 class="text-black dark:text-slate-200 text-xl font-semibold">Prode Mundial 2026</h2>
+                <button id="btn-close-menu" class="p-1 focus:outline-none text-slate-400 hover:text-white transition duration-200">
+                    <svg class="w-10 h-10 text-black dark:text-slate-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+            <ul class="h-full w-full flex flex-col space-y-4">
+                {% if user.is_authenticated %}
+                    {% for item in menu_items %}
+                    <li>
+                        <a href="{% url item.url%}" 
+                            class="block w-full text-center py-2.5 font-semibold bg-slate-50 dark:bg-slate-950/40 dark:hover:bg-slate-900/40
+                            rounded-xl text-sm transition border text-black dark:text-slate-300 border-slate-200/50 dark:border-slate-900/50
+                            shadow-md">
+                            {{item.name}}
+                        </a>
+                    </li>
+                    {% endfor %}
+                {% else %}
+                    {% for item in menu_items %}
+                    {% if item.login_required == 'false' %}
+                    <li>
+                        <a href="{% url item.url%}" 
+                            class="block w-full text-center py-2.5 font-semibold bg-slate-50 dark:bg-slate-950/40 dark:hover:bg-slate-900/40
+                            rounded-xl text-sm transition border text-black dark:text-slate-300 border-slate-200/50 dark:border-slate-900/50
+                            shadow-md">
+                            {{item.name}}
+                        </a>
+                    </li>
+                    {% endif %}
+                    {% endfor %}
+                {% endif %}
+            </ul>
+        </div>
+        <button class="theme-toggle-btn p-2 rounded-lg bg-slate-50 dark:bg-slate-800 text-xl hover:cursor-pointer shadow-md">
+            <span class="dark:hidden">🌙</span>
+            <span class="hidden dark:inline">☀️</span>
+        </button>
+        <div class="border-t border-slate-800 pt-6">
+            {% if user.is_authenticated %}
+                <div class="flex items-center space-x-3 mb-6">
+                    <div class="w-9 h-9 flex items-center justify-center bg-slate-800 text-emerald-400 font-bold rounded-full text-sm uppercase">
+                        {{ user.username|slice:":2" }}
+                    </div>
+                    <div>
+                        <p class="text-sm font-semibold text-white leading-none">{{ user.username }}</p>
+                        <p class="text-xs text-slate-500 mt-1">Participante</p>
+                    </div>
+                </div>
+                <form action="{% url 'logout' %}" method="post">
+                    {% csrf_token %}
+                    <button type="submit" class="block w-full text-center py-2.5 bg-red-950/40 hover:bg-red-900/40 text-red-400 font-semibold rounded-xl text-sm transition border border-red-900/50">
+                        Cerrar Sesión
+                    </button>
+                </form>
+            {% else %}
+                <div class="space-y-3">
+                    <a href="{% url 'login' %}" class="block w-full text-center py-2.5 bg-emerald-50 hover:bg-emerald-500 text-emerald-700
+                    dark:bg-emerald-600 dark:hover:bg-emerald-700 dark:text-white font-semibold rounded-xl text-sm transition shadow-md">
+                        Iniciar Sesión
+                    </a>
+                    <a href="{% url 'register' %}" class="block w-full text-center py-2.5 bg-emerald-50 hover:bg-emerald-500 text-gray-900
+                    dark:bg-slate-800 dark:hover:bg-slate-700 dark:text-slate-300 font-semibold rounded-xl text-sm transition shadow-md">
+                        Registrarse
+                    </a>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+    <main class="text-slate-900 dark:text-slate-200 flex-1 p-4 flex flex-col justify-start items-center">
+    {% block body %}
+    {% endblock %}
+    </main>
+    <footer class="w-full h-16 z-20 bg-zinc-900 flex flex-col md:flex-row justify-center items-center text-slate-200">
+        <p>Giuliano Blengino © 2026. </p>
+        <p>Todos los derechos reservados</p>
+    </footer>
+    <script>
+        const mobileMenu = document.getElementById('mobile-menu');
+        const btnOpen = document.getElementById('btn-open-menu');
+        const btnClose = document.getElementById('btn-close-menu');
+        const overlay = document.getElementById('menu-overlay');
+
+        btnOpen.addEventListener('click', ()=>{
+            overlay.classList.remove('opacity-0', 'pointer-events-none');
+            overlay.classList.add('opacity-100', 'z-45', 'pointer-events-auto');
+
+            mobileMenu.classList.remove('translate-x-full', 'pointer-events-none');
+            mobileMenu.classList.add('translate-x-0', 'pointer-events-auto');
+        });
+
+        const closeMenu = () => {
+            overlay.classList.add('opacity-0', 'pointer-events-none');
+            overlay.classList.remove('opacity-100', 'z-45');
+
+            mobileMenu.classList.add('translate-x-full', 'pointer-events-none');
+            mobileMenu.classList.remove('translate-x-0', 'pointer-events-auto');
+        }
+
+        btnClose.addEventListener('click', closeMenu)
+        overlay.addEventListener('click', closeMenu)
+    </script>
+    <script>
+        const themeToggleButtons = document.querySelectorAll('.theme-toggle-btn');
+
+        // 1. Al cargar la página, verificamos si ya había una preferencia guardada
+        if (localStorage.getItem('color-theme') === 'dark' || (!('color-theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            document.documentElement.classList.add('dark');
+        } else {
+            document.documentElement.classList.remove('dark');
+        }
+
+        // 2. Escuchamos el clic del botón
+        if (themeToggleButtons.length > 0) {
+        themeToggleButtons.forEach(btn => {
+            btn.addEventListener('click', function() {
+                // Alternamos la clase dark en el html
+                document.documentElement.classList.toggle('dark');
+                
+                // Guardamos la preferencia
+                if (document.documentElement.classList.contains('dark')) {
+                    localStorage.setItem('color-theme', 'dark');
+                } else {
+                    localStorage.setItem('color-theme', 'light');
+                }
+            });
+        });
+        }
+    </script>
+</body>
+</html>

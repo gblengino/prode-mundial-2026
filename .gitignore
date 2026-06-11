@@ -1,0 +1,25 @@
+# Git Ignore
+
+# DB Local
+db/
+*.sqlite3
+
+# Archivos de entorno
+.env
+
+# Clave privada
+*.key
+*.pem
+
+# Archivos estaticos generados
+staticfiles/
+media/
+
+# Entorno virtual python
+.venv/
+env/
+venv/
+__pycache__/
+
+# Archivo fantasma de Tailwind para el plugin de VS Code
+tailwind.config.js

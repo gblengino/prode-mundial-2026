@@ -1,0 +1,27 @@
+@layer utilities {
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .no-scrollbar {
+    -ms-overflow-style: none;  /* IE and Edge */
+    scrollbar-width: none;  /* Firefox */
+  }
+}
+
+/* Para Chrome, Safari y Edge */
+::-webkit-scrollbar {
+  width: 8px; /* Más finita para que no estorbe tanto */
+}
+
+::-webkit-scrollbar-track {
+  background: transparent; /* Que no se vea el fondo de la barra */
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-slate-300 dark:bg-slate-700; /* Color discreto con Tailwind */
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  @apply bg-slate-400 dark:bg-slate-600;
+}

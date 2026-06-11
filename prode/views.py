@@ -1,0 +1,101 @@
+from django.shortcuts import get_object_or_404, redirect, render
+from django.forms import formset_factory
+from django.db.models import Sum
+from django.contrib import messages
+from django.contrib.auth import login
+from django.contrib.auth.forms import UserCreationForm
+from django.contrib.auth.decorators import login_required
+
+from .services.standings import calculate_group_table
+from .models import Match, Team, Prediction, User, Score
+from .forms import PredictionForm
+
+def index(request):
+    
+    groups = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L']
+
+    data = {}
+
+    for g in groups:
+        matches = Match.objects.filter(
+            stage__name="Fase de Grupos",
+            group=g
+        ).order_by("date")
+
+        teams = Team.objects.filter(local__group=g).union(Team.objects.filter(visitor__group=g))
+
+        data[g] = {
+            "fixture":matches,
+            "standings": calculate_group_table(matches, teams)
+        }
+
+    return render(request, "prode/index.html", {"data":data})
+
+@login_required
+def prode(request):
+
+    current_stage = request.GET.get('stage', 'Fase de Grupos')
+    current_matchday = request.GET.get('matchday', '1')
+
+    matches = Match.objects.filter(stage__name=current_stage, matchday=current_matchday).order_by('date')
+
+    PredictionFormSet = formset_factory(PredictionForm, extra=0)
+
+    if request.method == 'POST':
+        formset = PredictionFormSet(request.POST)
+        if formset.is_valid():
+            for form in formset:
+                data = form.cleaned_data
+                match_instance = data.get('match')
+                home_pred = data.get('home_prediction')
+                away_pred = data.get('away_prediction')
+
+                if home_pred is not None and away_pred is not None: # Controla si el usuario realizo predicciones
+                    if match_instance.is_open(): # Controla si el partido aun admite predicciones
+                        Prediction.objects.update_or_create(
+                            user = request.user,
+                            match = data['match'],
+                            defaults={
+                                'home_prediction': data['home_prediction'],
+                                'away_prediction': data['away_prediction']
+                            }
+                        )
+
+            messages.success(request, 'Tus predicciones se guardaron correctamente. ¡Buena suerte!')
+
+            return redirect('prode')
+        else:
+            print("Errores del formset: ", formset.errors)
+            print("Errores no compartidos: ", formset.non_form_errors())
+    else:
+        initial_data = []
+        for m in matches:
+            pred = Prediction.objects.filter(user=request.user, match=m).first()
+            initial_data.append({
+                'match':m.id,
+                'home_prediction':pred.home_prediction if pred else None,
+                'away_prediction':pred.away_prediction if pred else None
+            })
+        
+        formset = PredictionFormSet(initial=initial_data)
+
+    zipped_data = zip(matches, formset)
+    return render(request, 'prode/prode.html', {'zipped_data':zipped_data, 'formset':formset})
+
+
+def clasificacion(request):
+
+    standings = User.objects.filter(is_active=True,is_staff=False).annotate(total_points=Sum('scores__points')).order_by('-total_points')
+
+    return render(request, 'prode/clasificacion.html', {'standings':standings})
+
+def register(request):
+    if request.method == 'POST':
+        form = UserCreationForm(request.POST)
+        if form.is_valid():
+            user = form.save()
+            login(request, user)
+            return redirect('prode')
+    else:
+        form = UserCreationForm()
+    return render(request, 'registration/register.html', {"form":form})

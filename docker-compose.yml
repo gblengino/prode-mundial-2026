@@ -1,0 +1,27 @@
+version: '3.8'
+
+services:
+  web:
+    build: .
+    container_name: prode_mundial_web
+    # Comando de producción usando Gunicorn
+    command: gunicorn config.wsgi:application --bind 0.0.0.0:8000 --workers 3
+    ports:
+      - "8000:8000"
+    volumes:
+      # Guardamos el código y vinculamos carpetas para no perder datos
+      - .:/app
+      - static_volume:/app/static
+      - media_volume:/app/media
+      # PERSISTENCIA CLAVE: Vinculamos la DB de SQLite al disco real
+      - sqlite_data:/app/db
+    environment:
+      - DEBUG=False
+      - SECRET_KEY=${DJANGO_SECRET_KEY}
+      - ALLOWED_HOSTS=localhost,127.0.0.1
+    restart: always
+
+volumes:
+  static_volume:
+  media_volume:
+  sqlite_data:

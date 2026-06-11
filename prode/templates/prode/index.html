@@ -1,0 +1,80 @@
+{% extends 'prode/base.html'%}
+
+{% block body %}
+    <h1 class="text-3xl md:text-5xl font-bold pt-2 pb-4 uppercase">Prode Mundial 2026</h1>
+    <h2 class="text-2xl font-semibold py-2">Fase de Grupos</h2>
+    <section class="w-full max-w-[110rem] lg:px-32 flex-1 grid grid-cols-1 md:grid-cols-2 gap-4 py-2">
+    {% for group, content in data.items %}
+        <div class="flex-1 border border-zinc-300 rounded-xl px-4 pt-2 pb-4 bg-slate-100
+            dark:bg-slate-900 dark:border-zinc-300 shadow-md text-black dark:text-slate-200">
+            <h3 class="font-semibold text-center">Grupo {{group}}</h3>
+            <article class="w-full mt-2 flex flex-col justify-between gap-2 md:flex-row">
+                <table class="flex-none border border-collapse border-zinc-950 dark:border-slate-300 text-center">
+                    <thead>
+                        <tr class="border border-zinc-800">
+                            <th class="border dark:border-zinc-100 px-2 py-1">Equipo</th>
+                            <th class="border dark:border-zinc-100 px-2 py-1">PJ</th>
+                            <th class="border dark:border-zinc-100 px-2 py-1">GF</th>
+                            <th class="border dark:border-zinc-100 px-2 py-1">GC</th>
+                            <th class="border dark:border-zinc-100 px-2 py-1">DG</th>
+                            <th class="border dark:border-zinc-100 px-2 py-1">Pts</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for row in content.standings %}
+                        <tr class="border border-zinc-800 dark:border-zinc-100">
+                            <td class="px-2 py-1 flex gap-2">
+                                <img src="{{row.team_flag}}" alt="{{row.team}}" class="w-8 h-6">
+                                {{row.team}}
+                            </td>
+                            <td class="border  dark:border-zinc-100 px-2 py-1">{{row.played}}</td>
+                            <td class="border  dark:border-zinc-100 px-2 py-1">{{row.gf}}</td>
+                            <td class="border  dark:border-zinc-100 px-2 py-1">{{row.ga}}</td>
+                            <td class="border  dark:border-zinc-100 px-2 py-1">{{row.gd}}</td>
+                            <td class="border  dark:border-zinc-100 px-2 py-1">{{row.pts}}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                <div class="flex-1 flex flex-col justify-center items-center">
+                    <h4 class="w-full text-center font-semibold">Partidos</h4>
+                    {% for match in content.fixture %}
+                    <div class="w-full flex gap-1 lg:text-nowrap border-b border-zinc-800-50 dark:border-zinc-200/50">
+                        <div class="flex-1 flex gap-2">
+                            <div class="flex-1 text-right truncate">
+                                <span class="block md:hidden">{{match.home_team.fifa_code}}</span>
+                                <span class="hidden md:block">{{match.home_team.name}}</span>
+                            </div>
+                            <div class="flex gap-1 justify-center">
+                                <span class="font-semibold">
+                                    {% if match.home_score %}
+                                        {{match.home_score}}
+                                    {% else %}
+                                        0
+                                    {% endif %}
+                                </span>
+                                <span class="font-semibold"> - </span>
+                                <span class="font-semibold">
+                                    {% if match.away_score %}
+                                        {{match.away_score}}
+                                    {% else %}
+                                        0
+                                    {% endif %}
+                                </span>
+                            </div>
+                            <div class="flex-1 truncate">
+                                <span class="block md:hidden">{{match.away_team.fifa_code}}</span>
+                                <span class="hidden md:block">{{match.away_team.name}}</span>
+                            </div>
+                        </div>
+                        <div class="flex-none flex items-center">
+                            <p class="text-sm">{{match.date|date:"d/m - H:i"}}</p>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </article>
+        </div>
+    {% endfor %}
+    </section>
+{% endblock %}

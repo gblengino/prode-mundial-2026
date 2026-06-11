@@ -1,0 +1,39 @@
+{% extends 'prode/base.html' %}
+{% block title %} - Clasificación {% endblock %}
+{% block body %}
+    <section class="w-full max-w-[110rem] flex flex-col items-center justify-center">
+        <h2 class="text-4xl md:text-5xl font-bold text-zinc-200">CLASIFICACIÓN</h2>
+        <div class="w-full lg:max-w-5xl overflow-x-auto py-6">
+            <table class="w-full bg-slate-200 dark:bg-slate-800 border border-slate-800 dark:border-gray-200 shadow-sm rounded-lg overflow-hidden">
+                <thead class="bg-slate-900 text-zinc-200">
+                    <tr>
+                        <th class="py-3 px-2 lg:px-4 font-semibold text-lg">Pos</th>
+                        <th class="py-3 px-6 lg:px-20 font-semibold text-lg">Nombre</th>
+                        <th class="py-3 px-2 lg:px-4 font-semibold text-lg">Puntos</th>
+                    </tr>
+                </thead>
+                <tbody class="text-center">
+                    {% for user in standings %}
+                        <tr class="border-b border-zinc-200/50">
+                            <td class="py-4 px-6 text-xl text-gray-800 dark:text-zinc-200">
+                                {% if forloop.first %}
+                                🏆 {% elif forloop.counter == 2 %}
+                                🥈 {% elif forloop.counter == 3 %}
+                                🥉 {% else %}
+                                {{ forloop.counter }}° {% endif %}
+                            </td>
+                            <td class="py-4 px-6 text-lg text-gray-800 dark:text-zinc-200">{{ user.username }}</td>
+                            <td class="py-4 px-6 text-lg font-bold text-gray-800 dark:text-zinc-200">
+                                {% if user.total_points == None%}
+                                    0
+                                {% else %}
+                                    {{ user.total_points }}
+                                {% endif %}
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </section>
+{% endblock %}

@@ -1,0 +1,150 @@
+{% extends 'prode/base.html' %}
+{% load widget_tweaks %}
+
+{% block title %} - Predicciones {% endblock %}
+
+{% block body %}
+
+<h1 class="text-5xl font-black uppercase py-3">Predicciones</h1>
+
+    <!-- MENU FASES - MOBILE -->
+    <div class="block md:hidden bg-white dark:bg-slate-900 w-full">
+        <div class="flex overflow-x-auto no-scrollbar pt-3 px-4 gap-4 text-nowrap font-black uppercase">
+            <a href="?stage=Fase de Grupos&matchday=1"
+                class="text-xl rounded-t-lg p-2
+                {% if request.GET.stage == 'Fase de Grupos' or not request.GET.stage %} text-emerald-500 border-b-2 border-emerald-500 bg-slate-950 {% else %} text-slate-400 {% endif %}">
+                Fase de Grupos
+            </a>
+            <a href="?stage=16avos de Final"
+                class="text-xl rounded-t-lg p-2
+                {% if request.GET.stage == '16avos de Final' %} text-emerald-500 border-b-2 border-emerald-500 bg-slate-950 {% else %} text-slate-400 {% endif %}">
+                16avos de Final
+            </a>
+            <a href="?stage=Octavos de Final"
+                class="text-xl rounded-t-lg p-2
+                {% if request.GET.stage == 'Octavos de Final' %} text-emerald-500 border-b-2 border-emerald-500 bg-slate-950 {% else %} text-slate-400 {% endif %}">
+                Octavos de Final
+            </a>
+            <a href="?stage=Cuartos de Final"
+                class="text-xl rounded-t-lg p-2
+                {% if request.GET.stage == 'Cuartos de Final' %} text-emerald-500 border-b-2 border-emerald-500 bg-slate-950 {% else %} text-slate-400 {% endif %}">
+                Cuartos de Final
+            </a>
+            <a href="?stage=Semifinal"
+                class="text-xl rounded-t-lg p-2
+                {% if request.GET.stage == 'Semifinal' %} text-emerald-500 border-b-2 border-emerald-500 bg-slate-950 {% else %} text-slate-400 {% endif %}">
+                Semifinal
+            </a>
+            <a href="?stage=Final"
+                class="text-xl rounded-t-lg p-2
+                {% if request.GET.stage == 'Final' %} text-emerald-500 border-b-2 border-emerald-500 bg-slate-950 {% else %} text-slate-400 {% endif %}">
+                Final
+            </a>
+        </div>
+        {% if request.GET.stage == 'Fase de Grupos' or not request.GET.stage %} 
+        <div class="flex justify-center gap-6 py-2 bg-slate-50 dark:bg-slate-800/50">
+            {% for i in "123" %}
+            <a href="?stage=Fase de Grupos&matchday={{ forloop.counter }}" 
+               class="text-xs font-black uppercase tracking-widest
+               {% if request.GET.matchday|default:'1' == forloop.counter|stringformat:'i' %}
+                   text-emerald-500 border-b-2 border-emerald-500
+               {% else %}
+                   text-slate-400
+               {% endif %}">
+                Fecha {{ forloop.counter }}
+            </a>
+        {% endfor %}
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- FORMULARIO CON LAS PREDICCIONES -->
+    <form method="post" action="" class="w-full max-w-6xl py-4 grid grid-cols-1 md:grid-cols-2 font-semibold text-center">
+        {% csrf_token %}
+        {{ formset.management_form }}
+
+        <!-- RENDERIZADO DE CADA PARTIDO -->
+        {% for match, form in zipped_data %}
+        <div class="flex flex-col lg:flex-row items-center md:gap-4 md:p-4 border-b">
+            <div class="flex items-center justify-center font-black py-2 md:py-0">
+                <span class="text-md font-medium">{% if match.group %} GRUPO {{match.group}} {% endif %}</span>
+            </div>
+            <div class="flex-1 flex items-center">
+                <img src="{{match.home_team.flag_url}}" alt="{{match.home_team.name}}" class="w-10 md:w-12 h-auto">
+                <span class="flex-1 hidden md:flex items-center justify-center">{{ match.home_team.name }}</span>
+                <span class="flex-1 flex md:hidden items-center justify-center text-2xl pl-2 pr-4">{{ match.home_team.fifa_code }}</span>
+
+                <div class="flex-1 flex gap-2 items-center">
+                    {{form.match}}
+                    {% if match.is_open %}
+                        {% render_field form.home_prediction class+=" bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-white"%}
+                        <span class="text-slate-400 font-bold">-</span>
+                        {% render_field form.away_prediction class+=" bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-white"%}
+                    {% else %}
+                        {% render_field form.home_prediction disabled="disabled" class+=" opacity-40 cursor-not-allowed bg-neutral-500 select-none" %}
+                        <span class="text-slate-500 font-bold opacity-40">-</span>
+                        {% render_field form.away_prediction disabled="disabled" class+=" opacity-40 cursor-not-allowed bg-neutral-500 select-none" %}
+                    {% endif %}
+                </div>
+
+                <span class="flex-1 hidden md:flex items-center justify-center">{{ match.away_team.name }}</span>
+                <span class="flex-1 flex md:hidden items-center justify-center text-2xl pl-4 pr-2">{{ match.away_team.fifa_code }}</span>
+                <img src="{{match.away_team.flag_url}}" alt="{{match.away_team.name}}" class="w-10 md:w-12 h-auto">
+            </div>
+            <div class="flex py-2 md:py-0 md:flex-col">
+                <p>{{match.date|date:"d/m"}}</p>
+                <p class="px-2 md:hidden">-</p>
+                <p>{{match.date|date:"H:i"}}</p>
+            </div>
+        </div>
+        {% endfor %}
+        <div class="md:col-span-2 pt-4">
+            <button type="submit" class="px-4 py-2 bg-emerald-500 hover:bg-emerald-600 cursor-pointer rounded-2xl text-2xl">Guardar Predicciones</button>
+        </div>
+    </form>
+
+    <!-- MENU SIDEBAR - DESKTOP -->
+    <aside class="hidden md:block fixed z-10 w-[15%] h-full top-14 left-0 bg-zinc-300 dark:bg-slate-900 shadow-lg">
+        <article class="py-4 pl-4 font-black uppercase">
+            <h3 class="font-bold text-2xl">Fases</h3>
+            <ul>
+                <li class="indent-4 text-xl rounded-tl-lg pt-2
+                    {% if request.GET.stage == 'Fase de Grupos' or not request.GET.stage %} text-emerald-700 dark:text-emerald-500 border-b-2 border-emerald-700 dark:border-emerald-500 bg-white dark:bg-slate-950 {% else %} text-zinc-500 dark:text-slate-400 {% endif %}">
+                    <a href="?stage=Fase de Grupos&matchday=1">Fase de Grupos</a>
+                </li>
+                <ul class="rounded-bl-lg {% if request.GET.stage == 'Fase de Grupos' or not request.GET.stage %} bg-white dark:bg-slate-950 {% else %} hidden {% endif %}">
+                    <li class="indent-8 text-lg {% if request.GET.matchday == '1' or not request.GET.matchday %} text-emerald-600 dark:text-emerald-300 border-b-2 border-emerald-300 bg-white dark:bg-slate-950 {% else %} text-zinc-500 dark:text-slate-400 {% endif %}">
+                        <a href="?stage=Fase de Grupos&matchday=1">Fecha 1</a>
+                    </li>
+                    <li class="indent-8 text-lg {% if request.GET.matchday == '2' %} text-emerald-300 border-b-2 border-emerald-300 bg-white dark:bg-slate-950 {% else %} text-zinc-500 dark:text-slate-400 {% endif %}">
+                        <a href="?stage=Fase de Grupos&matchday=2">Fecha 2</a>
+                    </li>
+                    <li class="indent-8 text-lg pb-2 {% if request.GET.matchday == '3' %} text-emerald-300 border-b-2 border-emerald-300 bg-white dark:bg-slate-950 {% else %} text-zinc-500 dark:text-slate-400 {% endif %}">
+                        <a href="?stage=Fase de Grupos&matchday=3">Fecha 3</a>
+                    </li>
+                </ul>
+                <li class="indent-4 text-xl
+                    {% if request.GET.stage == '16avos de Final' %} text-emerald-500 border-b-2 border-emerald-500 bg-white dark:bg-slate-950 {% else %} text-zinc-500 dark:text-slate-400 {% endif %}">
+                    <a href="?stage=16avos de Final">16avos de Final</a>
+                </li>
+                <li class="indent-4 text-xl
+                    {% if request.GET.stage == 'Octavos de Final' %} text-emerald-500 border-b-2 border-emerald-500 bg-white dark:bg-slate-950 {% else %} text-zinc-500 dark:text-slate-400 {% endif %}">
+                    <a href="?stage=Octavos de Final">Octavos de Final</a>
+                </li>
+                <li class="indent-4 text-xl
+                    {% if request.GET.stage == 'Cuartos de Final' %} text-emerald-500 border-b-2 border-emerald-500 bg-white dark:bg-slate-950 {% else %} text-zinc-500 dark:text-slate-400 {% endif %}">
+                    <a href="?stage=Cuartos de Final">Cuartos de Final</a>
+                </li>
+                <li class="indent-4 text-xl
+                    {% if request.GET.stage == 'Semifinal' %} text-emerald-500 border-b-2 border-emerald-500 bg-white dark:bg-slate-950 {% else %} text-zinc-500 dark:text-slate-400 {% endif %}">
+                    <a href="?stage=Semifinal">Semifinal</a>
+                </li>
+                <li class="indent-4 text-xl
+                    {% if request.GET.stage == 'Final' %} text-emerald-500 border-b-2 border-emerald-500 bg-white dark:bg-slate-950 {% else %} text-zinc-500 dark:text-slate-400 {% endif %}">
+                    <a href="?stage=Final">Final</a>
+                </li>
+            </ul>
+        </article>
+    </aside>
+
+{% endblock %}
