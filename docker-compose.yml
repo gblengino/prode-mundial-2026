@@ -21,7 +21,25 @@ services:
       - ALLOWED_HOSTS=localhost,127.0.0.1
     restart: always
 
+nginx-proxy:
+    image: 'jc21/nginx-proxy-manager:latest'
+    container_name: prode_nginx_proxy
+    restart: always
+    ports:
+      - '80:80'   # Puerto web común
+      - '443:443' # Puerto web seguro (SSL)
+      - '81:81'   # Panel de administración de Nginx Proxy Manager
+    volumes:
+      - ./nginx/data:/data
+      - ./nginx/letsencrypt:/etc/letsencrypt
+    networks:
+      - prode_network
+
 volumes:
   static_volume:
   media_volume:
   sqlite_data:
+
+networks:
+  prode_network:
+    driver: bridge

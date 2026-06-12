@@ -28,6 +28,12 @@ DEBUG = True
 
 ALLOWED_HOSTS = ['137.131.248.223', 'prode.latland.online', 'localhost', '127.0.0.1']
 
+# Permite que los formularios POST pasen el filtro de seguridad de Django
+CSRF_TRUSTED_ORIGINS = [
+    'http://137.131.248.223',
+    'http://prode.latland.online',
+    'https://prode.latland.online',
+]
 
 # Application definition
 
