@@ -26,11 +26,13 @@ SECRET_KEY = 'django-insecure-002l(23-j^8r1s2wo)(pa$ag#g9mah&4_a%_v2e23=9-k)1g-a
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.environ.get('DEBUG', 'False') == True
 
-ALLOWED_HOSTS = ['137.131.248.223', 'prode.latland.online', 'localhost', '127.0.0.1']
+ALLOWED_HOSTS = [
+    'prode.latland.online', 
+    'localhost', 
+    '127.0.0.1']
 
 # Permite que los formularios POST pasen el filtro de seguridad de Django
 CSRF_TRUSTED_ORIGINS = [
-    'http://137.131.248.223',
     'http://prode.latland.online',
     'https://prode.latland.online',
 ]
