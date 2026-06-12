@@ -19,6 +19,8 @@ services:
       - DEBUG=False
       - SECRET_KEY=${DJANGO_SECRET_KEY}
       - ALLOWED_HOSTS=localhost,127.0.0.1
+    networks:
+      - prode_network
     restart: always
 
   nginx-proxy:
