@@ -24,7 +24,31 @@ class MatchAdmin(admin.ModelAdmin):
     search_fields = ('home_team__name', 'away_team__name')
     actions = [set_matchday_1, set_matchday_2, set_matchday_3]
 
-admin.site.register(Prediction)
+@admin.register(Prediction)
+class PredictionAdmin(admin.ModelAdmin):
+    list_display = ('user', 'get_home_team', 'get_away_team', 'home_prediction', 'away_prediction', 'created_at',)
+    list_select_related = ('match', 'user')
+    list_filter = ('match__played', 'match__stage__name', 'match__matchday',)
+    search_fields = ('user__username',)
 
-admin.site.register(Score)
+    @admin.display(ordering='match__home_team', description='Local')
+    def get_home_team(self, obj):
+        return obj.match.home_team
+    
+    @admin.display(ordering='match__away_team', description='Visitante')
+    def get_away_team(self, obj):
+        return obj.match.away_team
+    
+@admin.register(Score)
+class ScoreAdmin(admin.ModelAdmin):
+    list_display = ('user', 'get_home_team', 'get_away_team', 'points')
+    list_filter = ('user',)
+
+    @admin.display(ordering='match__home_team', description='Local')
+    def get_home_team(self, obj):
+        return obj.match.home_team
+    
+    @admin.display(ordering='match__away_team', description='Visitante')
+    def get_away_team(self, obj):
+        return obj.match.away_team
 
