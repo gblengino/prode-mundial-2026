@@ -1,6 +1,6 @@
 from django.shortcuts import get_object_or_404, redirect, render
 from django.forms import formset_factory
-from django.db.models import Sum
+from django.db.models import Sum, Count, Q
 from django.contrib import messages
 from django.contrib.auth import login
 from django.contrib.auth.forms import UserCreationForm
@@ -35,7 +35,7 @@ def index(request):
 def prode(request):
 
     current_stage = request.GET.get('stage', 'Fase de Grupos')
-    current_matchday = request.GET.get('matchday', '1')
+    current_matchday = request.GET.get('matchday', '2')
 
     matches = Match.objects.filter(stage__name=current_stage, matchday=current_matchday).order_by('date')
 
@@ -70,7 +70,7 @@ def prode(request):
     else:
         initial_data = []
         for m in matches:
-            pred = Prediction.objects.filter(user=request.user, match=m).first()
+            pred = Prediction.objects.filter(user=request.user, match=m).select_related('match').first()
             initial_data.append({
                 'match':m.id,
                 'home_prediction':pred.home_prediction if pred else None,
@@ -80,12 +80,18 @@ def prode(request):
         formset = PredictionFormSet(initial=initial_data)
 
     zipped_data = zip(matches, formset)
-    return render(request, 'prode/prode.html', {'zipped_data':zipped_data, 'formset':formset})
+    return render(request, 'prode/prode.html', {'zipped_data':zipped_data, 'formset':formset, 'current_stage':current_stage, 'current_matchday':current_matchday})
 
 
 def clasificacion(request):
 
-    standings = User.objects.filter(is_active=True,is_staff=False).annotate(total_points=Sum('scores__points')).order_by('-total_points')
+    standings = User.objects.filter(
+        is_active=True,
+        is_staff=False
+        ).annotate(
+            total_points=Sum('scores__points'),
+            plenos=Count('scores', filter=Q(scores__points=3))
+            ).order_by('-total_points','-plenos','username')
 
     return render(request, 'prode/clasificacion.html', {'standings':standings})
 

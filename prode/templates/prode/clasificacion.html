@@ -1,15 +1,25 @@
 {% extends 'prode/base.html' %}
 {% block title %} - Clasificación {% endblock %}
 {% block body %}
-    <section class="w-full max-w-[110rem] flex flex-col items-center justify-center">
-        <h2 class="text-4xl md:text-5xl font-bold text-zinc-200">CLASIFICACIÓN</h2>
-        <div class="w-full lg:max-w-5xl overflow-x-auto py-6">
+    <section class="flex-1 w-full max-w-[110rem] flex flex-col items-center justify-center">
+        <h2 class="text-4xl md:text-5xl font-bold text-slate-900 dark:text-zinc-200">CLASIFICACIÓN</h2>
+        <div class="w-full lg:max-w-5xl overflow-x-auto my-6">
             <table class="w-full bg-slate-200 dark:bg-slate-800 border border-slate-800 dark:border-gray-200 shadow-sm rounded-lg overflow-hidden">
                 <thead class="bg-slate-900 text-zinc-200">
                     <tr>
-                        <th class="py-3 px-2 lg:px-4 font-semibold text-lg">Pos</th>
+                        <th class="py-3 px-2 lg:px-4 font-semibold text-lg">
+                            <span class="inline md:hidden">Pos</span>
+                            <span class="hidden md:inline">Posición</span>
+                        </th>
                         <th class="py-3 px-6 lg:px-20 font-semibold text-lg">Nombre</th>
-                        <th class="py-3 px-2 lg:px-4 font-semibold text-lg">Puntos</th>
+                        <th class="py-3 px-2 lg:px-4 font-semibold text-lg">
+                            <span class="inline md:hidden">🎯</span>
+                            <span class="hidden md:inline">Plenos</span>
+                        </th>
+                        <th class="py-3 px-2 lg:px-4 font-semibold text-lg">
+                            <span class="inline md:hidden">Pts</span>
+                            <span class="hidden md:inline">Puntos</span>
+                        </th>
                     </tr>
                 </thead>
                 <tbody class="text-center">
@@ -23,17 +33,21 @@
                                 {{ forloop.counter }}° {% endif %}
                             </td>
                             <td class="py-4 px-6 text-lg text-gray-800 dark:text-zinc-200">{{ user.username }}</td>
+                            <td>{{user.plenos|default:0}}</td>
                             <td class="py-4 px-6 text-lg font-bold text-gray-800 dark:text-zinc-200">
-                                {% if user.total_points == None%}
-                                    0
-                                {% else %}
-                                    {{ user.total_points }}
-                                {% endif %}
+                                {{ user.total_points|default:0 }}
                             </td>
                         </tr>
                     {% endfor %}
                 </tbody>
             </table>
+        </div>
+        <div class="w-full text-center my-2 mt-auto">
+            <h6 class="text-lg">Criterios de desempate:</h6>
+            <ol class="text-center text-sm">
+                <li>1. Cantidad de puntos obtenidos por las predicciones</li>
+                <li>2. Cantidad de plenos (resultados exactos) obtenidos</li>
+            </ol>
         </div>
     </section>
 {% endblock %}
