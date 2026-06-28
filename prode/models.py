@@ -53,6 +53,15 @@ class Match(models.Model):
     home_score = models.IntegerField(null=True, blank=True)
     away_score = models.IntegerField(null=True, blank=True)
     group = models.CharField(max_length=1, null=True, blank=True)
+
+    winner_forced = models.ForeignKey(
+        Team,
+        on_delete=models.SET_NULL,
+        related_name="matches_won",
+        blank=True,
+        null=True,
+        verbose_name="Equipo que clasifica/avanza"
+    )
     
     locked = models.BooleanField(default=False)
     played = models.BooleanField(default=False)
@@ -89,6 +98,10 @@ class Match(models.Model):
                 if pred_result == real_result:
                     points_earned = 1
         
+            if self.winner_forced and pred.predicted_winner:
+                if pred.predicted_winner == self.winner_forced:
+                    points_earned += 2
+
             Score.objects.update_or_create(
                 user=pred.user,
                 match=self,
@@ -132,6 +145,14 @@ class Prediction(models.Model):
     )
     home_prediction = models.IntegerField()
     away_prediction = models.IntegerField()
+    predicted_winner = models.ForeignKey(
+        Team,
+        on_delete=models.SET_NULL,
+        related_name="predictions_won",
+        blank=True,
+        null=True,
+        verbose_name="Prediccion de quien clasifica"
+    )
     created_at = models.DateTimeField(auto_now=True)
 
     class Meta:

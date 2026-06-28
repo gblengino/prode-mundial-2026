@@ -1,6 +1,6 @@
 from django import forms
 
-from .models import Prediction, Match
+from .models import Prediction, Match, Team
 
 class PredictionForm(forms.ModelForm):
 
@@ -27,6 +27,23 @@ class PredictionForm(forms.ModelForm):
         }),
     )
 
+    predicted_winner = forms.ModelChoiceField(
+        queryset=Team.objects.none(),
+        required=False,
+        label="Quien clasifica?",
+        widget=forms.RadioSelect
+    )
+
     class Meta:
         model = Prediction
-        fields = ['home_prediction', 'away_prediction', 'match']
+        fields = ['home_prediction', 'away_prediction','predicted_winner', 'match']
+    
+    def __init__(self, *args, **kwargs):
+        match_instance = kwargs.pop('match_instance', None)
+        super().__init__(*args, **kwargs)
+        
+        if match_instance and match_instance.home_team and match_instance.away_team:
+            # Filtramos el combo para que SOLO muestre los dos equipos que juegan
+            self.fields['predicted_winner'].queryset = Team.objects.filter(
+                id__in=[match_instance.home_team.id, match_instance.away_team.id]
+            )

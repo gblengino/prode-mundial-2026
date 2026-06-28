@@ -7,6 +7,16 @@
 
 <h1 class="text-4xl md:text-5xl font-black uppercase py-3">Predicciones</h1>
 
+    {% if not match.group %}
+    <div class="w-full max-w-6xl text-center font-medium pb-2">
+        <span class="text-md">
+            Para esta fase podés seleccionar también qué equipo creés que va a pasar de ronda clickeando en ese equipo <br>
+            (Por ejemplo, podés poner que los equipos empatan 1 a 1 y seleccionar qué equipo va a terminar pasando, ya sea por penales o en tiempo extra) <br>
+            <strong class="font-bold text-lg underline">IMPORTANTE</strong> el resultado que predigas debe ser el que se dé <strong class="font-bold text-lg underline">en los 90 minutos</strong>
+        </span>
+    </div>
+    {% endif %}
+
     <!-- MENU FASES - MOBILE -->
     <div class="block md:hidden w-full">
         <div class="flex overflow-x-auto no-scrollbar pt-3 px-4 gap-4 text-nowrap font-black uppercase bg-slate-300 dark:bg-slate-900 rounded-t-lg">
@@ -59,7 +69,7 @@
     </div>
 
     <!-- FORMULARIO CON LAS PREDICCIONES -->
-    <form method="post" action="" class="w-full max-w-6xl my-4 pb-4 grid grid-cols-1 md:grid-cols-2 font-semibold text-center 
+    <form method="post" action="" class="w-full max-w-6xl my-4 pb-4 {% if current_matchday %} grid grid-cols-1 md:grid-cols-2 {% endif %} font-semibold text-center 
         bg-slate-300 dark:bg-transparent rounded-lg">
         {% csrf_token %}
         {{ formset.management_form }}
@@ -71,11 +81,15 @@
                 <span class="text-md font-medium">{% if match.group %} GRUPO {{match.group}} {% endif %}</span>
             </div>
             <div class="flex-1 flex items-center">
-                <img src="{{match.home_team.flag_url}}" alt="{{match.home_team.name}}" class="w-6 md:w-12 h-auto">
-                <span class="flex-1 hidden md:flex items-center justify-center">{{ match.home_team.name }}</span>
-                <span class="flex-1 flex md:hidden items-center justify-center text-xl pl-2 pr-4">{{ match.home_team.fifa_code }}</span>
-
-                <div class="flex-1 flex gap-2 items-center">
+                <{% if not match.group %}label{% else %}div{% endif %} class="flex-1 flex items-center gap-2 p-2 rounded-xl {% if not match.group %} border border-zinc-200/40 dark:border-slate-700/50 bg-zinc-50/50 dark:bg-slate-900/30 cursor-pointer transition-all hover:bg-zinc-100 dark:hover:bg-slate-900/60 has-[:checked]:bg-emerald-500/10 has-[:checked]:border-emerald-500 has-[:checked]:ring-2 has-[:checked]:ring-emerald-500/20 {% endif %}">
+                    {% if not match.group %}
+                        {% render_field form.predicted_winner.0 class="hidden" %}
+                    {% endif %}
+                    <img src="{{match.home_team.flag_url}}" alt="{{match.home_team.name}}" class="w-6 md:w-12 h-auto">
+                    <span class="flex-1 hidden md:flex items-center justify-center">{{ match.home_team.name }}</span>
+                    <span class="flex-1 flex md:hidden items-center justify-center text-xl pl-2 pr-4">{{ match.home_team.fifa_code }}</span>
+                </{% if not match.group %}label{% else %}div{% endif %}>
+                <div class="flex-1 flex gap-2 items-center justify-center">
                     {{form.match}}
                     {% if match.is_open %}
                         {% render_field form.home_prediction class+=" bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-white"%}
@@ -105,9 +119,16 @@
                     {% endif %}
                 </div>
 
-                <span class="flex-1 hidden md:flex items-center justify-center">{{ match.away_team.name }}</span>
-                <span class="flex-1 flex md:hidden items-center justify-center text-xl pl-4 pr-2">{{ match.away_team.fifa_code }}</span>
-                <img src="{{match.away_team.flag_url}}" alt="{{match.away_team.name}}" class="w-6 md:w-12 h-auto">
+                <{% if not match.group %}label{% else %}div{% endif %} class="flex-1 flex items-center gap-2 p-2 rounded-xl {% if not match.group %} border border-zinc-200/40 dark:border-slate-700/50 bg-zinc-50/50 dark:bg-slate-900/30 cursor-pointer transition-all hover:bg-zinc-100 dark:hover:bg-slate-900/60 has-[:checked]:bg-emerald-500/10 has-[:checked]:border-emerald-500 has-[:checked]:ring-2 has-[:checked]:ring-emerald-500/20 {% endif %}">
+                
+                <span class="flex-1 hidden md:flex items-center justify-center pointer-events-none">{{ match.away_team.name }}</span>
+                <span class="flex-1 flex md:hidden items-center justify-center text-xl pl-4 pr-2 pointer-events-none">{{ match.away_team.fifa_code }}</span>
+                <img src="{{match.away_team.flag_url}}" alt="{{match.away_team.name}}" class="w-6 md:w-12 h-auto rounded pointer-events-none shadow-sm">
+                
+                {% if not match.group %}
+                    {% render_field form.predicted_winner.1 class="hidden" %}
+                {% endif %}
+            </{% if not match.group %}label{% else %}div{% endif %}>
             </div>
             <div class="flex py-2 md:py-0 md:flex-col">
                 <p>{{match.date|date:"d/m"}}</p>

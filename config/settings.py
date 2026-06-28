@@ -24,8 +24,8 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-002l(23-j^8r1s2wo)(pa$ag#g9mah&4_a%_v2e23=9-k)1g-a'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.environ.get('DEBUG', 'False') == True
-
+DEBUG = True
+# os.environ.get('DEBUG', 'False') =
 ALLOWED_HOSTS = [
     'prode.latland.online', 
     'localhost', 

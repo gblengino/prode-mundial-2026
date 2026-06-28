@@ -26,7 +26,7 @@ class MatchAdmin(admin.ModelAdmin):
 
 @admin.register(Prediction)
 class PredictionAdmin(admin.ModelAdmin):
-    list_display = ('user', 'get_home_team', 'get_away_team', 'home_prediction', 'away_prediction', 'created_at',)
+    list_display = ('user', 'get_home_team', 'get_away_team', 'home_prediction', 'away_prediction', 'predicted_winner', 'created_at',)
     list_select_related = ('match', 'user')
     list_filter = ('match__played', 'match__stage__name', 'match__matchday',)
     search_fields = ('user__username',)
